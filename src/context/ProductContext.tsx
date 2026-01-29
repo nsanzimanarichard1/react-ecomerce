@@ -1,55 +1,68 @@
-import { createContext, useContext } from 'react';
-import type { ReactNode } from 'react';
-
-export interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  category: string;
-  image: string;
-  description: string;
-  discount?: number;
-  featured?: boolean;
-}
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { productService } from '../services/products';
+import type { Product, Category } from '../types/api';
 
 interface ProductContextType {
   products: Product[];
-  cart: Product[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (id: number) => void;
-  clearCart: () => void;
+  categories: Category[];
+  isLoading: boolean;
+  error: string | null;
+  getProductsByCategory: (categoryId: string) => Product[];
+  refreshProducts: () => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
-  const [products] = useContext(ProductsStateContext);
-  const [cart, setCart] = useContext(CartStateContext);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const addToCart = (product: Product) => {
-    setCart([...cart, product]);
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [productsData, categoriesData] = await Promise.all([
+        productService.getAllProducts(),
+        productService.getAllCategories()
+      ]);
+      setProducts(productsData);
+      setCategories(categoriesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeFromCart = (id: number) => {
-    setCart(cart.filter(item => item.id !== id));
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const getProductsByCategory = (categoryId: string): Product[] => {
+    return products.filter(product => product.category?._id === categoryId);
   };
 
-  const clearCart = () => {
-    setCart([]);
+  const refreshProducts = async () => {
+    await loadData();
   };
 
   return (
-    <ProductContext.Provider value={{ products, cart, addToCart, removeFromCart, clearCart }}>
+    <ProductContext.Provider
+      value={{
+        products,
+        categories,
+        isLoading,
+        error,
+        getProductsByCategory,
+        refreshProducts,
+      }}
+    >
       {children}
     </ProductContext.Provider>
   );
 };
-
-// Separate contexts for state
-const ProductsStateContext = createContext<[Product[], any]>([[], null]);
-const CartStateContext = createContext<[Product[], any]>([[], null]);
 
 export const useProducts = () => {
   const context = useContext(ProductContext);

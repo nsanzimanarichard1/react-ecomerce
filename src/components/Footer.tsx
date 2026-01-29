@@ -88,10 +88,10 @@ export const Footer = () => {
         <div className="border-t border-gray-700 pt-6 flex justify-between items-center">
           <p className="text-sm text-gray-400">Kapee © 2026 by PressLayouts All Rights Reserved.</p>
           <div className="flex gap-2">
-            <img src="https://via.placeholder.com/40" alt="visa" className="h-6" />
-            <img src="https://via.placeholder.com/40" alt="paypal" className="h-6" />
-            <img src="https://via.placeholder.com/40" alt="discover" className="h-6" />
-            <img src="https://via.placeholder.com/40" alt="mastercard" className="h-6" />
+            <div className="h-6 w-10 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">VISA</div>
+            <div className="h-6 w-10 bg-orange-500 rounded text-white text-xs flex items-center justify-center font-bold">PP</div>
+            <div className="h-6 w-10 bg-gray-600 rounded text-white text-xs flex items-center justify-center font-bold">DISC</div>
+            <div className="h-6 w-10 bg-red-500 rounded text-white text-xs flex items-center justify-center font-bold">MC</div>
           </div>
         </div>
       </div>

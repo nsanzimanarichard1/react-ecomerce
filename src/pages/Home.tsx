@@ -1,101 +1,217 @@
-import { Card } from '../components/Card';
-import { products } from '../data/products';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ProductCard } from '../components/ProductCard';
+import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
-import type { Product } from '../context/ProductContext';
+import type { Product } from '../types/api';
 
 export const HomePage = () => {
+  const { products, categories, isLoading } = useProducts();
   const { addToCart } = useCart();
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  const handleAddToCart = (product: Product) => {
-    addToCart(product);
-    alert(`${product.name} added to cart!`);
+  const heroProducts = products.slice(0, 5);
+
+  useEffect(() => {
+    if (heroProducts.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentHeroIndex((prev) => (prev + 1) % heroProducts.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [heroProducts.length]);
+
+  const nextHero = () => {
+    setCurrentHeroIndex((prev) => (prev + 1) % heroProducts.length);
   };
 
-  const featuredProducts = products.filter(p => p.featured);
-  const onSaleProducts = products.filter(p => p.discount);
+  const prevHero = () => {
+    setCurrentHeroIndex((prev) => (prev - 1 + heroProducts.length) % heroProducts.length);
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product._id,
+      productId: product._id,
+      quantity: 1,
+      product: {
+        id: product._id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.imageUrl,
+        category: product.category?.name || '',
+        rating: 0,
+        stock: product.stock
+      }
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const featuredProducts = products.slice(0, 5);
+  const recentProducts = products.slice(0, 8);
 
   return (
     <div className="max-w-7xl mx-auto">
       {/* Hero Section */}
       <section className="bg-white py-8 px-4">
         <div className="flex items-center justify-between gap-8">
-          {/* Left: Man Model */}
-          <div className="flex-1">
-            <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=600&fit=crop"
-              alt="Men's Fashion Model"
-              className="w-full h-auto rounded-lg"
-            />
+          {/* Left: Product Image Slider */}
+          <div className="flex-1 relative">
+            <div className="relative overflow-hidden rounded-lg h-96">
+              {heroProducts.map((product, index) => (
+                <div
+                  key={product._id}
+                  className={`absolute inset-0 transition-opacity duration-1000 ${
+                    index === currentHeroIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <img
+                    src={`https://dessertshopbackend.onrender.com${product.imageUrl}`}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = '/placeholder-image.svg';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {/* Navigation Buttons */}
+            <button
+              onClick={prevHero}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition"
+            >
+              ←
+            </button>
+            <button
+              onClick={nextHero}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition"
+            >
+              →
+            </button>
+            
+            {/* Dots Indicator */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {heroProducts.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentHeroIndex(index)}
+                  className={`w-2 h-2 rounded-full transition ${
+                    index === currentHeroIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Center: Content */}
           <div className="flex-1 text-center">
-            <p className="text-blue-600 font-semibold mb-2 text-sm">NEW COLLECTIONS 2019</p>
-            <h1 className="text-5xl font-bold mb-4">MEN'S FASHION</h1>
+            <p className="text-blue-600 font-semibold mb-2 text-sm">NEW COLLECTIONS ON FASHION NOW</p>
+            <h1 className="text-5xl font-bold mb-4">SHOP NOW</h1>
             <p className="text-gray-700 mb-6 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor!
+              Discover amazing products with great deals and quality you can trust!
             </p>
-            <button className="border-2 border-blue-600 text-blue-600 px-8 py-2 rounded hover:bg-blue-600 hover:text-white transition font-semibold">
+            <Link to="/shop" className="border-2 border-blue-600 text-blue-600 px-8 py-2 rounded hover:bg-blue-600 hover:text-white transition font-semibold">
               SHOP NOW
-            </button>
+            </Link>
           </div>
 
-          {/* Right: Promotional Items */}
+          {/* Right: Featured Products */}
           <div className="flex-1 space-y-4">
-            {/* White Sneakers */}
-            <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <p className="text-blue-600 text-sm font-semibold">WHITE SNEAKERS</p>
-              <h3 className="text-xl font-bold mb-1">MIN. 30% OFF</h3>
-              <p className="text-gray-600 text-sm mb-3">Men Fashionable Shoes</p>
-              <img
-                src="/src/assets/images/shoes/image.png"
-                alt="White Sneakers"
-                className="w-full h-40 object-cover rounded mb-3"
-              />
-              <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-semibold text-sm">
-                SHOP NOW
-              </button>
-            </div>
-
-            {/* Women's Fashion */}
-            <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <p className="text-blue-600 text-sm font-semibold">WOMEN'S FASHION</p>
-              <h3 className="text-xl font-bold mb-1">UP TO 65% OFF</h3>
-              <p className="text-gray-600 text-sm mb-3">Shoes & Backpacks</p>
-              <img
-                src="/src/assets/images/women/image.png"
-                alt="Women's Fashion"
-                className="w-full h-40 object-cover rounded mb-3"
-              />
-              <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-semibold text-sm">
-                SHOP NOW
-              </button>
-            </div>
+            {products.slice(0, 2).map((product) => (
+              <div key={product._id} className="bg-gray-50 rounded-lg p-4 text-center">
+                <p className="text-blue-600 text-sm font-semibold">{product.category?.name || 'FEATURED'}</p>
+                <h3 className="text-xl font-bold mb-1">${product.price}</h3>
+                <p className="text-gray-600 text-sm mb-3">{product.name}</p>
+                <img
+                  src={`https://dessertshopbackend.onrender.com${product.imageUrl}`}
+                  alt={product.name}
+                  className="w-full h-40 object-cover rounded mb-3"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder-image.svg';
+                  }}
+                />
+                <Link to={`/product/${product._id}`} className="block w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-semibold text-sm">
+                  VIEW PRODUCT
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Category Section */}
       <section className="py-8 px-4">
-        <div className="flex overflow-x-auto gap-4 pb-4">
-          {['Men', 'Women', 'Shoes', 'Bags & Accessories', 'Watches', 'Jewellery', 'Accessories', 'Dresses', 'Tops', 'Lingerie'].map((cat) => (
-            <div key={cat} className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-75 transition flex-shrink-0">
-              <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                <img
-                  src={cat === 'Women' ? '/src/assets/images/women/image.png' : cat === 'Shoes' ? '/src/assets/images/shoes/image.png' : `https://images.unsplash.com/photo-${
-                    cat === 'Men'
-                      ? '1507003211169-0a1dd7228f2d'
-                      : cat === 'Bags & Accessories'
-                      ? '1548036328-c9fa89d128fa'
-                      : '1523170335258-f5ed11844a49'
-                  }?w=100&h=100&fit=crop`}
-                  alt={cat}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="text-sm font-semibold text-center">{cat}</span>
-            </div>
-          ))}
+        <h2 className="text-3xl font-bold mb-6 border-b-4 border-blue-600 inline-block pb-2">
+          CATEGORIES
+        </h2>
+        <div className="relative">
+          <button 
+            onClick={() => {
+              const container = document.getElementById('categories-container');
+              container?.scrollBy({ left: -200, behavior: 'smooth' });
+            }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition"
+          >
+            ←
+          </button>
+          <button 
+            onClick={() => {
+              const container = document.getElementById('categories-container');
+              container?.scrollBy({ left: 200, behavior: 'smooth' });
+            }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition"
+          >
+            →
+          </button>
+          <div 
+            id="categories-container"
+            className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {categories.map((category) => {
+              const categoryProduct = products.find(product => 
+                product.category?._id === category._id || product.category?.id === category._id
+              );
+              
+              return (
+                <Link 
+                  key={category._id} 
+                  to={`/category/${category._id}`} 
+                  className="group flex flex-col items-center gap-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer min-w-[120px]"
+                >
+                  <div className="w-16 h-16 rounded-full overflow-hidden group-hover:scale-110 transition-transform">
+                    {categoryProduct ? (
+                      <img 
+                        src={`https://dessertshopbackend.onrender.com${categoryProduct.imageUrl}`}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center" style={{display: categoryProduct ? 'none' : 'flex'}}>
+                      <span className="text-xl font-bold text-white">{category.name[0].toUpperCase()}</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-center text-gray-700 group-hover:text-blue-600 transition-colors">
+                    {category.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -106,19 +222,7 @@ export const HomePage = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
           {featuredProducts.map(product => (
-            <Card key={product.id} product={product} onAddToCart={handleAddToCart} />
-          ))}
-        </div>
-      </section>
-
-      {/* On Sale Products */}
-      <section className="py-8 px-4">
-        <h2 className="text-3xl font-bold mb-2 border-b-4 border-blue-600 inline-block pb-2">
-          ON SALE
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
-          {onSaleProducts.map(product => (
-            <Card key={product.id} product={product} onAddToCart={handleAddToCart} />
+            <ProductCard key={product._id} product={product} onAddToCart={handleAddToCart} />
           ))}
         </div>
       </section>
@@ -127,13 +231,10 @@ export const HomePage = () => {
       <section className="py-8 px-4">
         <div className="flex gap-8 mb-8 border-b">
           <button className="pb-2 border-b-4 border-blue-600 font-bold text-gray-800">RECENT</button>
-          <button className="pb-2 font-bold text-gray-600 hover:text-gray-800">FEATURED</button>
-          <button className="pb-2 font-bold text-gray-600 hover:text-gray-800">ON SALE</button>
-          <button className="pb-2 font-bold text-gray-600 hover:text-gray-800">TOP RATED</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {products.slice(0, 4).map(product => (
-            <Card key={product.id} product={product} onAddToCart={handleAddToCart} />
+          {recentProducts.map(product => (
+            <ProductCard key={product._id} product={product} onAddToCart={handleAddToCart} />
           ))}
         </div>
       </section>

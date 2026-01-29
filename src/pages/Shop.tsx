@@ -1,76 +1,72 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card } from '../components/Card';
-import { products } from '../data/products';
+import { ProductCard } from '../components/ProductCard';
+import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
-import type { Product } from '../context/ProductContext';
+import type { Product } from '../types/api';
 
 export const ShopPage = () => {
   const [searchParams] = useSearchParams();
+  const { products, categories, isLoading } = useProducts();
   const { addToCart } = useCart();
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [minRating, setMinRating] = useState<number>(0);
 
   const searchTerm = searchParams.get('search')?.toLowerCase() || '';
   const categoryFilter = searchParams.get('category') || 'All Categories';
 
-  const categories = [
-    'Men Fashion',
-    'Women Fashion',
-    'Shoes',
-    'Bags & Accessories',
-    'Watches',
-    'Jewellery',
-    'Accessories',
-    'Dresses',
-    'Tops',
-    'Lingerie & Nightwear',
-  ];
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product._id,
+      productId: product._id,
+      quantity: 1,
+      product: {
+        id: product._id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.imageUrl,
+        category: product.category?.name || '',
+        rating: 0,
+        stock: product.stock
+      }
+    });
+  };
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Search filter
       const matchesSearch =
         !searchTerm ||
         product.name.toLowerCase().includes(searchTerm) ||
         product.description.toLowerCase().includes(searchTerm) ||
-        product.category.toLowerCase().includes(searchTerm);
+        product.category?.name.toLowerCase().includes(searchTerm);
 
-      // Category filter from URL
       const matchesUrlCategory =
-        categoryFilter === 'All Categories' || product.category === categoryFilter;
+        categoryFilter === 'All Categories' || product.category?.name === categoryFilter;
 
-      // Selected categories filter (from sidebar)
       const matchesSidebarCategories =
-        selectedCategories.length === 0 || selectedCategories.includes(product.category);
+        selectedCategories.length === 0 || 
+        (product.category && selectedCategories.includes(product.category._id));
 
-      // Price filter
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
 
-      // Rating filter
-      const matchesRating = product.rating >= minRating;
-
-      return (
-        matchesSearch &&
-        matchesUrlCategory &&
-        matchesSidebarCategories &&
-        matchesPrice &&
-        matchesRating
-      );
+      return matchesSearch && matchesUrlCategory && matchesSidebarCategories && matchesPrice;
     });
-  }, [searchTerm, categoryFilter, selectedCategories, priceRange, minRating]);
+  }, [products, searchTerm, categoryFilter, selectedCategories, priceRange]);
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = (categoryId: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId]
     );
   };
 
-  const handleAddToCartClick = (product: Product) => {
-    addToCart(product);
-    alert(`${product.name} added to cart!`);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
@@ -92,13 +88,13 @@ export const ShopPage = () => {
               <input
                 type="range"
                 min="0"
-                max="500"
+                max="2000000"
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                 className="w-full"
               />
               <p className="text-xs text-gray-600 mt-2">
-                ${priceRange[0]} - ${priceRange[1]}
+                ${priceRange[0].toLocaleString()} - ${priceRange[1].toLocaleString()}
               </p>
             </div>
 
@@ -107,54 +103,24 @@ export const ShopPage = () => {
               <h4 className="font-bold text-sm mb-3">Categories</h4>
               <div className="space-y-2">
                 {categories.map((cat) => (
-                  <label key={cat} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <label key={cat._id} className="flex items-center gap-2 text-sm cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={selectedCategories.includes(cat)}
-                      onChange={() => handleCategoryChange(cat)}
+                      checked={selectedCategories.includes(cat._id)}
+                      onChange={() => handleCategoryChange(cat._id)}
                       className="w-4 h-4 cursor-pointer"
                     />
-                    <span>{cat}</span>
+                    <span>{cat.name}</span>
                   </label>
                 ))}
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div>
-              <h4 className="font-bold text-sm mb-3">Rating</h4>
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <label key={rating} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="radio"
-                      name="rating"
-                      checked={minRating === rating}
-                      onChange={() => setMinRating(rating)}
-                      className="w-4 h-4 cursor-pointer"
-                    />
-                    <span>{'⭐'.repeat(rating)} & Up</span>
-                  </label>
-                ))}
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="radio"
-                    name="rating"
-                    checked={minRating === 0}
-                    onChange={() => setMinRating(0)}
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                  <span>All Ratings</span>
-                </label>
               </div>
             </div>
 
             {/* Reset Button */}
             <button
               onClick={() => {
-                setPriceRange([0, 500]);
+                setPriceRange([0, 2000000]);
                 setSelectedCategories([]);
-                setMinRating(0);
               }}
               className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-semibold text-sm"
             >
@@ -168,10 +134,10 @@ export const ShopPage = () => {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-3 gap-4">
               {filteredProducts.map((product) => (
-                <Card
-                  key={product.id}
+                <ProductCard
+                  key={product._id}
                   product={product}
-                  onAddToCart={handleAddToCartClick}
+                  onAddToCart={handleAddToCart}
                 />
               ))}
             </div>
@@ -183,9 +149,8 @@ export const ShopPage = () => {
               </p>
               <button
                 onClick={() => {
-                  setPriceRange([0, 500]);
+                  setPriceRange([0, 2000000]);
                   setSelectedCategories([]);
-                  setMinRating(0);
                 }}
                 className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
               >

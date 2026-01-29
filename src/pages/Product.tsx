@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
 
 export const ProductPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const product = products.find(p => p.id === parseInt(id || '0'));
@@ -19,11 +20,25 @@ export const ProductPage = () => {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    alert(`${product.name} added to cart!`);
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, quantity);
+    navigate('/checkout');
   };
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
+      {/* Back Navigation */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
+        >
+          ← Back to Products
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-8">
         {/* Product Image */}
         <div>
@@ -93,12 +108,17 @@ export const ProductPage = () => {
           </div>
 
           {/* Action Buttons */}
-          <button onClick={handleAddToCart} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition mb-3">
-            ADD TO CART
-          </button>
-          <button className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded-lg font-bold text-lg hover:bg-blue-600 hover:text-white transition mb-3">
-            ❤ ADD TO WISHLIST
-          </button>
+          <div className="space-y-3">
+            <button onClick={handleAddToCart} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition">
+              ADD TO CART
+            </button>
+            <button onClick={handleBuyNow} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-green-700 transition">
+              BUY NOW
+            </button>
+            <button className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded-lg font-bold text-lg hover:bg-blue-600 hover:text-white transition">
+              ❤ ADD TO WISHLIST
+            </button>
+          </div>
 
           {/* Shipping Info */}
           <div className="border-t pt-6 mt-6">

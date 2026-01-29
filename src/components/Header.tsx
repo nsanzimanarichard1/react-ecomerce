@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export const Header = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -9,7 +10,8 @@ export const Header = () => {
   const [showLanguage, setShowLanguage] = useState<boolean>(false);
   const [showCurrency, setShowCurrency] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { totalItems, totalPrice } = useCart();
+  const { totalItems, totalPrice, openCart } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const categories = [
     'All Categories',
@@ -110,23 +112,23 @@ export const Header = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo */}
           <Link to="/" className="text-3xl font-bold hover:opacity-80 transition whitespace-nowrap">
-            kapee.
+            ShopNow.
           </Link>
 
           {/* Search Form */}
-          <form onSubmit={handleSearch} className="flex-1 mx-6">
-            <div className="flex items-center gap-0">
+          <form onSubmit={handleSearch} className="flex-1 mx-6 ">
+            <div className="flex items-center gap-0 rounded-2xl bg-gray-50 cursor-pointer">
               <input
                 type="text"
-                placeholder="Search for products, categories, brands, sku..."
+                placeholder="Search for products, categories, brands, featured product..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-l-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1 px-4 py-2 rounded-l-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
               />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 focus:outline-none border-l border-gray-300"
+                className="px-4 py-2 bg-gray-50 cursor-pointer text-gray-700 focus:outline-none border-l border-gray-300"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -136,7 +138,7 @@ export const Header = () => {
               </select>
               <button
                 type="submit"
-                className="px-5 py-2 bg-blue-600 text-white rounded-r-full hover:bg-blue-700 transition font-semibold border-l border-gray-300"
+                className="px-5 py-2 bg-gray-50 text-white rounded-r-full hover:bg-gray-100 transition font-semibold border-l border-gray-300"
               >
                 🔍
               </button>
@@ -145,11 +147,26 @@ export const Header = () => {
 
           {/* Right Actions */}
           <div className="flex gap-8 items-center whitespace-nowrap">
-            {/* Sign In */}
-            <div className="text-center cursor-pointer hover:opacity-80 transition text-sm">
-              <span className="block text-xs">HELLO,</span>
-              <div className="font-bold">SIGN IN</div>
-            </div>
+            {/* Sign In / User Menu */}
+            {isAuthenticated ? (
+              <div className="relative group">
+                <div className="text-center cursor-pointer hover:opacity-80 transition text-sm">
+                  <div className="font-bold">👤 {user?.username}</div>
+                </div>
+                <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-max">
+                  <button
+                    onClick={logout}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm whitespace-nowrap"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Link to="/signin" className="text-center cursor-pointer hover:opacity-80 transition text-sm">
+                <div className="font-bold">SIGN IN</div>
+              </Link>
+            )}
 
             {/* Wishlist */}
             <Link to="#" className="text-center cursor-pointer hover:opacity-80 transition text-sm">
@@ -158,10 +175,13 @@ export const Header = () => {
             </Link>
 
             {/* Cart */}
-            <Link to="/cart" className="text-center cursor-pointer hover:opacity-80 transition text-sm">
+            <button 
+              onClick={openCart}
+              className="text-center cursor-pointer hover:opacity-80 transition text-sm"
+            >
               <span className="block">🛒</span>
               <div className="font-bold text-xs">{totalItems} ${totalPrice.toFixed(2)}</div>
-            </Link>
+            </button>
           </div>
         </div>
       </div>

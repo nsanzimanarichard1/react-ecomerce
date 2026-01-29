@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Product } from '../context/ProductContext';
+import type { Product } from '../context/CartContext';
 
 interface CardProps {
   product: Product;
