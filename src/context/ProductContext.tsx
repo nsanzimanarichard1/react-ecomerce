@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import type { Product, Category } from '../types/api';
@@ -37,7 +37,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const error = productsError?.message || categoriesError?.message || null;
 
   const getProductsByCategory = (categoryId: string): Product[] => {
-    return products.filter(product => product.category?._id === categoryId);
+    return products.filter((product: Product) => product.category?._id === categoryId);
   };
 
   const refetch = () => {

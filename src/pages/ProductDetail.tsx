@@ -15,16 +15,16 @@ export const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart({
-        id: product._id,
+      const legacyProduct = {
+        id: parseInt(product._id) || Math.random(),
         name: product.name,
         price: product.price,
+        rating: 0,
         category: product.category?.name || '',
         image: getImageUrl(product.imageUrl),
-        description: product.description,
-        rating: 4.5,
-        quantity: quantity
-      });
+        description: product.description
+      };
+      addToCart(legacyProduct as any, quantity);
     }
   };
 
@@ -58,7 +58,7 @@ export const ProductDetailPage = () => {
         <span className="mx-2">/</span>
         {product.category && (
           <>
-            <Link to={`/category/${product.category._id || product.category.id}`} className="hover:text-blue-600">
+            <Link to={`/category/${product.category._id}`} className="hover:text-blue-600">
               {product.category.name}
             </Link>
             <span className="mx-2">/</span>

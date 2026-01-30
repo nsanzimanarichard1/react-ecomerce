@@ -43,7 +43,7 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
 
         {product.category && (
           <div className="mb-3">
-            <Link to={`/category/${product.category._id || product.category.id}`}>
+            <Link to={`/category/${product.category._id}`}>
               <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer">
                 {product.category.name}
               </span>

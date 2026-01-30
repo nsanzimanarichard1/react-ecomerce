@@ -66,7 +66,7 @@ export default function Cart() {
           {cart.map((item) => (
             <div key={item.id} className="flex gap-4 border-b pb-6 last:border-b-0">
               {/* Image */}
-              <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded overflow-hidden">
+              <div className="shrink-0 w-20 h-20 bg-gray-100 rounded overflow-hidden">
                 <img
                   src={item.image}
                   alt={item.name}

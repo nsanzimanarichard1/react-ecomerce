@@ -23,23 +23,47 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface Category {
+  _id: string;
+  name: string;
+  description?: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
   description: string;
   price: number;
   imageUrl: string;
-  category: {
-    _id: string;
-    name: string;
-  };
+  category: Category;
   stock: number;
+  inStock: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CartItem {
-  dessertId: string;
+  id: string;
+  productId: string;
   quantity: number;
-  addedAt: string;
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    image: string;
+    category: string;
+    rating: number;
+    stock: number;
+  };
+}
+
+export interface Order {
+  _id: string;
+  userId: string;
+  items: CartItem[];
+  total: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }

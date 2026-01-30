@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
-import type { Product, CartItem as ApiCartItem } from '../types/api';
+import type { Product as ApiProduct, CartItem as ApiCartItem } from '../types/api';
 
 // Legacy Product interface for backward compatibility
 export interface Product {
@@ -76,11 +76,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         rating: 4.5, // Default rating
         quantity: item.quantity,
         cartIndex: index // Add unique identifier for cart items
-      })) : [];
+      } as any)) : [];
       
       // Merge duplicate items by ID
       const mergedCart = transformedCart.reduce((acc: any[], item: any) => {
-        const existing = acc.find(cartItem => cartItem.id === item.id);
+        const existing = acc.find((cartItem: any) => cartItem.id === item.id);
         if (existing) {
           existing.quantity += item.quantity;
         } else {
@@ -101,15 +101,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!isAuthenticated || !user) {
       // Fallback to local storage for non-authenticated users
       setCart((prevCart) => {
-        const existingItem = prevCart.find((item) => item.id === product.id);
+        const existingItem = prevCart.find((item: any) => item.id === (product as any).id);
         if (existingItem) {
-          return prevCart.map((item) =>
-            item.id === product.id
+          return prevCart.map((item: any) =>
+            item.id === (product as any).id
               ? { ...item, quantity: item.quantity + quantity }
               : item
           );
         }
-        return [...prevCart, { ...product, quantity }];
+        return [...prevCart, { ...product, quantity } as any];
       });
       return;
     }
@@ -118,7 +118,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     try {
       await api.post('/cart', {
-        dessertId: product.id.toString(),
+        dessertId: (product as any).id.toString(),
         quantity: quantity
       });
       await loadCart(); // Refresh cart from API
@@ -126,15 +126,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setError(err.response?.data?.message || 'Failed to add item to cart');
       // Fallback to local state on error
       setCart((prevCart) => {
-        const existingItem = prevCart.find((item) => item.id === product.id);
+        const existingItem = prevCart.find((item: any) => item.id === (product as any).id);
         if (existingItem) {
-          return prevCart.map((item) =>
-            item.id === product.id
+          return prevCart.map((item: any) =>
+            item.id === (product as any).id
               ? { ...item, quantity: item.quantity + quantity }
               : item
           );
         }
-        return [...prevCart, { ...product, quantity }];
+        return [...prevCart, { ...product, quantity } as any];
       });
     } finally {
       setIsLoading(false);
@@ -143,7 +143,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromCart = async (id: number) => {
     if (!isAuthenticated) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+      setCart((prevCart) => prevCart.filter((item: any) => item.id !== id));
       return;
     }
 
@@ -167,7 +167,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     if (!isAuthenticated) {
       setCart((prevCart) =>
-        prevCart.map((item) =>
+        prevCart.map((item: any) =>
           item.id === id ? { ...item, quantity } : item
         )
       );
@@ -227,8 +227,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  const totalItems = Array.isArray(cart) ? cart.reduce((sum, item) => sum + item.quantity, 0) : 0;
-  const totalPrice = Array.isArray(cart) ? cart.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0;
+  const totalItems = Array.isArray(cart) ? cart.reduce((sum: number, item: any) => sum + item.quantity, 0) : 0;
+  const totalPrice = Array.isArray(cart) ? cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0) : 0;
 
   return (
     <CartContext.Provider

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../context/ProductContext';
-import { useCart } from '../context/CartContext';
+import { useCart, type Product as LegacyProduct } from '../context/CartContext';
 import type { Product } from '../types/api';
 
 export const HomePage = () => {
@@ -30,16 +30,16 @@ export const HomePage = () => {
   };
 
   const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: product._id,
+    const legacyProduct: LegacyProduct = {
+      id: parseInt(product._id) || Math.random(),
       name: product.name,
       price: product.price,
+      rating: 0,
       category: product.category?.name || '',
       image: `https://dessertshopbackend.onrender.com${product.imageUrl}`,
-      description: product.description,
-      rating: 4.5,
-      quantity: 1
-    });
+      description: product.description
+    };
+    addToCart(legacyProduct as any, 1);
   };
 
   if (isLoading) {
@@ -175,14 +175,14 @@ export const HomePage = () => {
           >
             {Array.isArray(categories) && categories.map((category) => {
               const categoryProduct = Array.isArray(products) ? products.find(product => 
-                product.category?._id === category._id || product.category?.id === category._id
+                product.category?._id === category._id
               ) : null;
               
               return (
                 <Link 
                   key={category._id} 
                   to={`/category/${category._id}`} 
-                  className="group flex flex-col items-center gap-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer min-w-[120px]"
+                  className="group flex flex-col items-center gap-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer min-w-30"
                 >
                   <div className="w-16 h-16 rounded-full overflow-hidden group-hover:scale-110 transition-transform">
                     {categoryProduct ? (
@@ -192,11 +192,14 @@ export const HomePage = () => {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                          const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextElement) {
+                            nextElement.style.display = 'flex';
+                          }
                         }}
                       />
                     ) : null}
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center" style={{display: categoryProduct ? 'none' : 'flex'}}>
+                    <div className="w-full h-full bg-lineart-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center" style={{display: categoryProduct ? 'none' : 'flex'}}>
                       <span className="text-xl font-bold text-white">{category.name[0].toUpperCase()}</span>
                     </div>
                   </div>

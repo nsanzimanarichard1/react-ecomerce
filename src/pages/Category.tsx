@@ -11,20 +11,20 @@ export const CategoryPage = () => {
 
   const category = categories.find(cat => cat._id === categoryId);
   const categoryProducts = products.filter(product => 
-    product.category?._id === categoryId || product.category?.id === categoryId
+    product.category?._id === categoryId
   );
 
   const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: product._id,
+    const legacyProduct = {
+      id: parseInt(product._id) || Math.random(),
       name: product.name,
       price: product.price,
+      rating: 0,
       category: product.category?.name || '',
       image: `https://dessertshopbackend.onrender.com${product.imageUrl}`,
-      description: product.description,
-      rating: 4.5,
-      quantity: 1
-    });
+      description: product.description
+    };
+    addToCart(legacyProduct as any, 1);
   };
 
   if (isLoading) {

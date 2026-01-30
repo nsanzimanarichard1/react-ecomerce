@@ -16,21 +16,16 @@ export const ShopPage = () => {
   const categoryFilter = searchParams.get('category') || 'All Categories';
 
   const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: product._id,
-      productId: product._id,
-      quantity: 1,
-      product: {
-        id: product._id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        image: product.imageUrl,
-        category: product.category?.name || '',
-        rating: 0,
-        stock: product.stock
-      }
-    });
+    const legacyProduct = {
+      id: parseInt(product._id) || Math.random(),
+      name: product.name,
+      price: product.price,
+      rating: 0,
+      category: product.category?.name || '',
+      image: `https://dessertshopbackend.onrender.com${product.imageUrl}`,
+      description: product.description
+    };
+    addToCart(legacyProduct as any, 1);
   };
 
   const filteredProducts = useMemo(() => {

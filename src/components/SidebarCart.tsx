@@ -26,7 +26,7 @@ export const SidebarCart = ({ isOpen, onClose }: SidebarCartProps) => {
 
       {/* Drawer */}
       <aside
-        className={`fixed top-0 right-0 h-full w-[360px] bg-white z-50 shadow-xl transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-90 bg-white z-50 shadow-xl transform transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -50,7 +50,7 @@ export const SidebarCart = ({ isOpen, onClose }: SidebarCartProps) => {
                 <p>Your cart is empty</p>
               </div>
             ) : (
-              cart.map((item) => (
+              cart.map((item: any) => (
               <div key={item.id} className="flex gap-3 border-b pb-4">
                 <img
                   src={item.image}
