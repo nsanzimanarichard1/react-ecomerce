@@ -10,7 +10,7 @@ export const HomePage = () => {
   const { addToCart } = useCart();
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  const heroProducts = products.slice(0, 5);
+  const heroProducts = Array.isArray(products) ? products.slice(0, 5) : [];
 
   useEffect(() => {
     if (heroProducts.length > 0) {
@@ -32,18 +32,13 @@ export const HomePage = () => {
   const handleAddToCart = (product: Product) => {
     addToCart({
       id: product._id,
-      productId: product._id,
-      quantity: 1,
-      product: {
-        id: product._id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        image: product.imageUrl,
-        category: product.category?.name || '',
-        rating: 0,
-        stock: product.stock
-      }
+      name: product.name,
+      price: product.price,
+      category: product.category?.name || '',
+      image: `https://dessertshopbackend.onrender.com${product.imageUrl}`,
+      description: product.description,
+      rating: 4.5,
+      quantity: 1
     });
   };
 
@@ -55,8 +50,8 @@ export const HomePage = () => {
     );
   }
 
-  const featuredProducts = products.slice(0, 5);
-  const recentProducts = products.slice(0, 8);
+  const featuredProducts = Array.isArray(products) ? products.slice(0, 5) : [];
+  const recentProducts = Array.isArray(products) ? products.slice(0, 8) : [];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -127,7 +122,7 @@ export const HomePage = () => {
 
           {/* Right: Featured Products */}
           <div className="flex-1 space-y-4">
-            {products.slice(0, 2).map((product) => (
+            {Array.isArray(products) && products.slice(0, 2).map((product) => (
               <div key={product._id} className="bg-gray-50 rounded-lg p-4 text-center">
                 <p className="text-blue-600 text-sm font-semibold">{product.category?.name || 'FEATURED'}</p>
                 <h3 className="text-xl font-bold mb-1">${product.price}</h3>
@@ -178,10 +173,10 @@ export const HomePage = () => {
             className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {categories.map((category) => {
-              const categoryProduct = products.find(product => 
+            {Array.isArray(categories) && categories.map((category) => {
+              const categoryProduct = Array.isArray(products) ? products.find(product => 
                 product.category?._id === category._id || product.category?.id === category._id
-              );
+              ) : null;
               
               return (
                 <Link 

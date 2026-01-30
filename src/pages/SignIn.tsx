@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ApiError } from '../services/api';
 
 export const SignInPage = () => {
   const [email, setEmail] = useState('');
@@ -19,25 +18,8 @@ export const SignInPage = () => {
     try {
       await login({ email, password });
       navigate('/');
-    } catch (error) {
-      if (error instanceof ApiError) {
-        // Handle specific API errors based on status codes
-        switch (error.status) {
-          case 400:
-            setError('Email and password are required');
-            break;
-          case 401:
-            setError('Invalid credentials');
-            break;
-          case 500:
-            setError('Login failed. Please try again later.');
-            break;
-          default:
-            setError(error.message || 'An error occurred during login');
-        }
-      } else {
-        setError('Network error. Please check your connection and try again.');
-      }
+    } catch (error: any) {
+      setError(error.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

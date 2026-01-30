@@ -1,5 +1,7 @@
 import type { Product } from '../types/api';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string || 'https://dessertshopbackend.onrender.com/api';
+
 interface ProductsResponse {
   success: boolean;
   data: Product[];
@@ -12,13 +14,13 @@ interface CategoriesResponse {
 
 export const productService = {
   async getAllProducts(): Promise<Product[]> {
-    const response = await fetch('https://dessertshopbackend.onrender.com/api/products');
+    const response = await fetch(`${API_BASE_URL}/products`);
     const data: ProductsResponse = await response.json();
     return data.data;
   },
 
   async getAllCategories(): Promise<any[]> {
-    const response = await fetch('https://dessertshopbackend.onrender.com/api/all/category');
+    const response = await fetch(`${API_BASE_URL}/all/category`);
     const data: CategoriesResponse = await response.json();
     return data.data;
   },

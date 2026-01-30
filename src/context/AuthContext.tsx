@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../services/auth';
+import api from '../services/api';
 import type { User, LoginRequest, RegisterRequest } from '../types/api';
 
 interface AuthContextType {
@@ -31,23 +31,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: LoginRequest) => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://dessertshopbackend.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Store the real token from API
-        localStorage.setItem('authToken', data.token);
-        setUser(data.user);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-    } catch (error) {
-      throw error;
+      const { data } = await api.post('/auth/login', credentials);
+      localStorage.setItem('authToken', data.token);
+      setUser(data.user);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -56,11 +44,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (userData: RegisterRequest) => {
     setIsLoading(true);
     try {
-      const response = await authService.register(userData);
-      setUser(response.user);
-    } catch (error) {
-      // Re-throw the error so the component can handle it
-      throw error;
+      await api.post('/create/user', {
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        role: 'USER'
+      });
+      // After successful registration, automatically log in
+      await login({ email: userData.email, password: userData.password });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -72,11 +65,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const forgotPassword = async (email: string) => {
-    await authService.forgotPassword(email);
+    await api.post('/auth/forgot-password', { email });
   };
 
   const resetPassword = async (token: string, password: string) => {
-    await authService.resetPassword(token, password);
+    await api.post('/auth/reset-password', { token, password });
   };
 
   return (

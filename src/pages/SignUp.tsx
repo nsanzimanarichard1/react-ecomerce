@@ -82,7 +82,7 @@ export const SignUpPage = () => {
                 value={formData.username}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your full name"
+                autoComplete="username"
               />
             </div>
             
@@ -98,7 +98,7 @@ export const SignUpPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your email"
+                autoComplete="email"
               />
             </div>
             

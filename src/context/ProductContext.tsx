@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { productService } from '../services/products';
+import { createContext, useContext, ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 import type { Product, Category } from '../types/api';
 
 interface ProductContextType {
@@ -8,44 +9,39 @@ interface ProductContextType {
   isLoading: boolean;
   error: string | null;
   getProductsByCategory: (categoryId: string) => Product[];
-  refreshProducts: () => Promise<void>;
+  refetch: () => void;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: productsData, isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const response = await api.get('/products');
+      return response.data.data || response.data;
+    },
+  });
 
-  const loadData = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const [productsData, categoriesData] = await Promise.all([
-        productService.getAllProducts(),
-        productService.getAllCategories()
-      ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const response = await api.get('/all/category');
+      return response.data.data || response.data;
+    },
+  });
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const products = productsData || [];
+  const categories = categoriesData || [];
+  const isLoading = productsLoading || categoriesLoading;
+  const error = productsError?.message || categoriesError?.message || null;
 
   const getProductsByCategory = (categoryId: string): Product[] => {
     return products.filter(product => product.category?._id === categoryId);
   };
 
-  const refreshProducts = async () => {
-    await loadData();
+  const refetch = () => {
+    refetchProducts();
   };
 
   return (
@@ -56,7 +52,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         error,
         getProductsByCategory,
-        refreshProducts,
+        refetch,
       }}
     >
       {children}
