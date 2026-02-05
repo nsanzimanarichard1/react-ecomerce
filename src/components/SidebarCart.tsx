@@ -26,19 +26,19 @@ export const SidebarCart = ({ isOpen, onClose }: SidebarCartProps) => {
 
       {/* Drawer */}
       <aside
-        className={`fixed top-0 right-0 h-full w-90 bg-white z-50 shadow-xl transform transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 left-0 h-full w-90 bg-white z-50 shadow-xl transform transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Header */}
         <div className="bg-blue-600 text-white px-4 py-4 flex items-center gap-3">
+          <h2 className="font-bold text-lg flex-1 text-center">MY CART</h2>
           <button
             onClick={onClose}
             className="text-2xl hover:bg-blue-700 rounded px-2"
           >
-            ←
+            →
           </button>
-          <h2 className="font-bold text-lg flex-1 text-center">MY CART</h2>
         </div>
 
         {/* Content */}
@@ -50,8 +50,8 @@ export const SidebarCart = ({ isOpen, onClose }: SidebarCartProps) => {
                 <p>Your cart is empty</p>
               </div>
             ) : (
-              cart.map((item: any) => (
-              <div key={item.id} className="flex gap-3 border-b pb-4">
+              cart.map((item: any, index: number) => (
+              <div key={`${item.id}-${index}`} className="flex gap-3 border-b pb-4">
                 <img
                   src={item.image}
                   alt={item.name}

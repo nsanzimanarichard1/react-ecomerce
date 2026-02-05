@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { IoLocationSharp, IoCall, IoMail, IoTime, IoLogoFacebook, IoLogoTwitter, IoLogoLinkedin, IoLogoInstagram, IoLogoYoutube, IoMusicalNotes } from 'react-icons/io5';
 
 export const Footer = () => {
   return (
@@ -11,10 +12,10 @@ export const Footer = () => {
             <p className="text-sm text-gray-400 mb-4">
               Lorem ipsum dolor sit amet, consectetur adipisicing elit.
             </p>
-            <p className="text-sm text-gray-400 mb-2">📍 Lorem Ipsum, 2046 Lorem Ipsum</p>
-            <p className="text-sm text-gray-400 mb-2">📞 576-245-2478</p>
-            <p className="text-sm text-gray-400">✉️ info@kapee.com</p>
-            <p className="text-sm text-gray-400 mt-2">⏰ Mon-Fri / 9:00 AM - 6:00 PM</p>
+            <p className="text-sm text-gray-400 mb-2"><IoLocationSharp className="inline" /> Lorem Ipsum, 2046 Lorem Ipsum</p>
+            <p className="text-sm text-gray-400 mb-2"><IoCall className="inline" /> 576-245-2478</p>
+            <p className="text-sm text-gray-400"><IoMail className="inline" /> info@kapee.com</p>
+            <p className="text-sm text-gray-400 mt-2"><IoTime className="inline" /> Mon-Fri / 9:00 AM - 6:00 PM</p>
           </div>
 
           {/* Information */}
@@ -74,12 +75,12 @@ export const Footer = () => {
             </div>
             {/* Social Icons */}
             <div className="flex gap-3 mt-4">
-              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700">f</a>
-              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700">𝕏</a>
-              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700">in</a>
-              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700">📷</a>
-              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700">▶</a>
-              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700">🎵</a>
+              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700"><IoLogoFacebook /></a>
+              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700"><IoLogoTwitter /></a>
+              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700"><IoLogoLinkedin /></a>
+              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700"><IoLogoInstagram /></a>
+              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700"><IoLogoYoutube /></a>
+              <a href="#" className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700"><IoMusicalNotes /></a>
             </div>
           </div>
         </div>

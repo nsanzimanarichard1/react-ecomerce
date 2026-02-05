@@ -66,21 +66,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const apiCart = data.success ? data.data : data;
       
       // Transform API cart items to match CartItem interface
-      const transformedCart = Array.isArray(apiCart) ? apiCart.map((item: any, index: number) => ({
-        id: item.dessertId.id || item.dessertId._id,
-        name: item.dessertId.name,
-        price: item.dessertId.price,
-        category: item.dessertId.category,
-        image: `https://dessertshopbackend.onrender.com${item.dessertId.imageUrl}`,
-        description: item.dessertId.description,
-        rating: 4.5, // Default rating
-        quantity: item.quantity,
-        cartIndex: index // Add unique identifier for cart items
-      } as any)) : [];
+      const transformedCart = Array.isArray(apiCart) ? apiCart.map((item: any) => {
+        const id = item.dessertId.id || item.dessertId._id;
+        if (!id) {
+          console.error('Missing ID for cart item:', item);
+        }
+        return {
+          id: id,
+          name: item.dessertId.name,
+          price: item.dessertId.price,
+          category: item.dessertId.category,
+          image: `https://dessertshopbackend.onrender.com${item.dessertId.imageUrl}`,
+          description: item.dessertId.description,
+          rating: 4.5, // Default rating
+          quantity: item.quantity
+        };
+      }) : [];
       
       // Merge duplicate items by ID
       const mergedCart = transformedCart.reduce((acc: any[], item: any) => {
-        const existing = acc.find((cartItem: any) => cartItem.id === item.id);
+        const existing = acc.find(cartItem => cartItem.id === item.id);
         if (existing) {
           existing.quantity += item.quantity;
         } else {
@@ -100,16 +105,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const addToCart = async (product: Product, quantity: number = 1) => {
     if (!isAuthenticated || !user) {
       // Fallback to local storage for non-authenticated users
+      const productId = (product as any)._id || product.id;
       setCart((prevCart) => {
-        const existingItem = prevCart.find((item: any) => item.id === (product as any).id);
+        const existingItem = prevCart.find((item) => item.id === productId);
         if (existingItem) {
-          return prevCart.map((item: any) =>
-            item.id === (product as any).id
+          return prevCart.map((item) =>
+            item.id === productId
               ? { ...item, quantity: item.quantity + quantity }
               : item
           );
         }
-        return [...prevCart, { ...product, quantity } as any];
+        return [...prevCart, { ...product, id: productId, quantity }];
       });
       return;
     }
@@ -117,24 +123,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     setError(null);
     try {
+      // Get product ID - could be _id (from API) or id (legacy)
+      const productId = (product as any)._id || product.id;
+      
       await api.post('/cart', {
-        dessertId: (product as any).id.toString(),
+        dessertId: productId,
         quantity: quantity
       });
       await loadCart(); // Refresh cart from API
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to add item to cart');
       // Fallback to local state on error
+      const productId = (product as any)._id || product.id;
       setCart((prevCart) => {
-        const existingItem = prevCart.find((item: any) => item.id === (product as any).id);
+        const existingItem = prevCart.find((item) => item.id === productId);
         if (existingItem) {
-          return prevCart.map((item: any) =>
-            item.id === (product as any).id
+          return prevCart.map((item) =>
+            item.id === productId
               ? { ...item, quantity: item.quantity + quantity }
               : item
           );
         }
-        return [...prevCart, { ...product, quantity } as any];
+        return [...prevCart, { ...product, id: productId, quantity }];
       });
     } finally {
       setIsLoading(false);
@@ -209,10 +219,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('User must be authenticated to create order');
     }
 
+    if (!Array.isArray(cart) || cart.length === 0) {
+      throw new Error('Cart is empty');
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      const { data } = await api.post('/orders', {});
+      // Format cart items for the order
+      const items = cart.map((item: any) => ({
+        dessertId: item.id.toString(),
+        quantity: item.quantity
+      }));
+      
+      const { data } = await api.post('/orders', { items });
       setCart([]); // Clear cart after successful order
       return data;
     } catch (err: any) {

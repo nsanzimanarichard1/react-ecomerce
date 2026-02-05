@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useProducts } from '../context/ProductContext';
+import { IoSearch, IoChevronDown, IoHeart, IoCart, IoPerson } from 'react-icons/io5';
 
 export const Header = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -12,29 +14,23 @@ export const Header = () => {
   const navigate = useNavigate();
   const { totalItems, totalPrice, openCart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { categories } = useProducts();
 
-  const categories = [
-    'All Categories',
-    'Men Fashion',
-    'Women Fashion',
-    'Shoes',
-    'Bags & Accessories',
-    'Watches',
-    'Jewellery',
-    'Accessories',
-    'Dresses',
-    'Tops',
-    'Lingerie & Nightwear',
-  ];
+  const categoryOptions = ['All Categories', ...categories.map(cat => cat.name)];
 
   const languages = ['ENGLISH', 'SPANISH', 'FRENCH', 'GERMAN'];
   const currencies = ['$ DOLLAR (US)', '€ EURO', '£ BRITISH POUND', '¥ YEN'];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams();
     if (searchTerm.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchTerm)}&category=${selectedCategory}`);
+      params.set('search', searchTerm.trim());
     }
+    if (selectedCategory !== 'All Categories') {
+      params.set('category', selectedCategory);
+    }
+    navigate(`/shop${params.toString() ? '?' + params.toString() : ''}`);
   };
 
   return (
@@ -50,7 +46,7 @@ export const Header = () => {
                 onClick={() => setShowLanguage(!showLanguage)}
                 className="flex items-center gap-1 hover:opacity-80 transition"
               >
-                ENGLISH <span>▼</span>
+                ENGLISH <IoChevronDown />
               </button>
               {showLanguage && (
                 <div className="absolute top-full left-0 mt-1 bg-white text-gray-800 rounded shadow-lg z-50 min-w-max">
@@ -73,7 +69,7 @@ export const Header = () => {
                 onClick={() => setShowCurrency(!showCurrency)}
                 className="flex items-center gap-1 hover:opacity-80 transition"
               >
-                $ DOLLAR (US) <span>▼</span>
+                $ DOLLAR (US) <IoChevronDown />
               </button>
               {showCurrency && (
                 <div className="absolute top-full left-0 mt-1 bg-white text-gray-800 rounded shadow-lg z-50 min-w-max">
@@ -130,7 +126,7 @@ export const Header = () => {
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="px-4 py-2 bg-gray-50 cursor-pointer text-gray-700 focus:outline-none border-l border-gray-300"
               >
-                {categories.map((cat) => (
+                {categoryOptions.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
@@ -138,9 +134,9 @@ export const Header = () => {
               </select>
               <button
                 type="submit"
-                className="px-5 py-2 bg-gray-50 text-white rounded-r-full hover:bg-gray-100 transition font-semibold border-l border-gray-300"
+                className="px-5 py-2 bg-gray-50 text-gray-700 rounded-r-full hover:bg-gray-100 transition font-semibold border-l border-gray-300"
               >
-                🔍
+                <IoSearch className="text-xl" />
               </button>
             </div>
           </form>
@@ -151,9 +147,23 @@ export const Header = () => {
             {isAuthenticated ? (
               <div className="relative group">
                 <div className="text-center cursor-pointer hover:opacity-80 transition text-sm">
-                  <div className="font-bold">👤 {user?.username}</div>
+                  <div className="font-bold flex items-center gap-1"><IoPerson /> {user?.username}</div>
                 </div>
                 <div className="absolute right-0 top-full mt-2 bg-white text-gray-800 rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-max">
+                  <Link
+                    to="/dashboard"
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm whitespace-nowrap"
+                  >
+                    My Dashboard
+                  </Link>
+                  {user?.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm whitespace-nowrap"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
                   <button
                     onClick={logout}
                     className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm whitespace-nowrap"
@@ -170,7 +180,7 @@ export const Header = () => {
 
             {/* Wishlist */}
             <Link to="#" className="text-center cursor-pointer hover:opacity-80 transition text-sm">
-              <span className="block">❤️</span>
+              <IoHeart className="text-2xl" />
               <div className="font-bold text-xs">0</div>
             </Link>
 
@@ -179,7 +189,7 @@ export const Header = () => {
               onClick={openCart}
               className="text-center cursor-pointer hover:opacity-80 transition text-sm"
             >
-              <span className="block">🛒</span>
+              <IoCart className="text-2xl" />
               <div className="font-bold text-xs">{totalItems} ${totalPrice.toFixed(2)}</div>
             </button>
           </div>

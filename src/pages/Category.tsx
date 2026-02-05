@@ -16,7 +16,7 @@ export const CategoryPage = () => {
 
   const handleAddToCart = (product: Product) => {
     const legacyProduct = {
-      id: parseInt(product._id) || Math.random(),
+      _id: product._id,
       name: product.name,
       price: product.price,
       rating: 0,

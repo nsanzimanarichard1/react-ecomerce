@@ -21,9 +21,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      // Don't make API calls on app load, just check if token exists
-      // Token validation will happen when user tries to use cart
+    const savedUser = localStorage.getItem('user');
+    
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+      }
     }
     setIsLoading(false);
   }, []);
@@ -33,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data } = await api.post('/auth/login', credentials);
       localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Login failed');
@@ -61,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
     setUser(null);
   };
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import api from '../services/api';
 
 export default function Checkout() {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, totalPrice, createOrder } = useCart();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,17 +26,21 @@ export default function Checkout() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate payment processing
-    setTimeout(() => {
-      clearCart();
-      setIsProcessing(false);
+    try {
+      // Backend creates order from cart automatically
+      // Shipping info can be collected but not required by API
+      await createOrder();
       alert('Order placed successfully! Thank you for your purchase.');
       navigate('/');
-    }, 2000);
+    } catch (error: any) {
+      alert(error.message || 'Failed to place order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (cart.length === 0) {

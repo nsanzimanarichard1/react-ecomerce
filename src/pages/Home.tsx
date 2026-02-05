@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../context/ProductContext';
 import { useCart, type Product as LegacyProduct } from '../context/CartContext';
 import type { Product } from '../types/api';
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 export const HomePage = () => {
   const { products, categories, isLoading } = useProducts();
@@ -11,15 +12,17 @@ export const HomePage = () => {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   const heroProducts = Array.isArray(products) ? products.slice(0, 5) : [];
+  const featuredProducts = Array.isArray(products) ? products.slice(0, 5) : [];
+  const recentProducts = Array.isArray(products) ? products.slice(0, 8) : [];
 
-  useEffect(() => {
+  useState(() => {
     if (heroProducts.length > 0) {
       const interval = setInterval(() => {
         setCurrentHeroIndex((prev) => (prev + 1) % heroProducts.length);
       }, 4000);
       return () => clearInterval(interval);
     }
-  }, [heroProducts.length]);
+  });
 
   const nextHero = () => {
     setCurrentHeroIndex((prev) => (prev + 1) % heroProducts.length);
@@ -31,15 +34,15 @@ export const HomePage = () => {
 
   const handleAddToCart = (product: Product) => {
     const legacyProduct: LegacyProduct = {
-      id: parseInt(product._id) || Math.random(),
+      _id: product._id,
       name: product.name,
       price: product.price,
       rating: 0,
       category: product.category?.name || '',
       image: `https://dessertshopbackend.onrender.com${product.imageUrl}`,
       description: product.description
-    };
-    addToCart(legacyProduct as any, 1);
+    } as any;
+    addToCart(legacyProduct, 1);
   };
 
   if (isLoading) {
@@ -49,9 +52,6 @@ export const HomePage = () => {
       </div>
     );
   }
-
-  const featuredProducts = Array.isArray(products) ? products.slice(0, 5) : [];
-  const recentProducts = Array.isArray(products) ? products.slice(0, 8) : [];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -64,8 +64,12 @@ export const HomePage = () => {
               {heroProducts.map((product, index) => (
                 <div
                   key={product._id}
-                  className={`absolute inset-0 transition-opacity duration-1000 ${
-                    index === currentHeroIndex ? 'opacity-100' : 'opacity-0'
+                  className={`absolute inset-0 transition-all duration-100 ${
+                    index === currentHeroIndex 
+                      ? 'translate-x-0 opacity-100' 
+                      : index < currentHeroIndex 
+                      ? '-translate-x-full opacity-0' 
+                      : 'translate-x-full opacity-0'
                   }`}
                 >
                   <img
@@ -85,13 +89,13 @@ export const HomePage = () => {
               onClick={prevHero}
               className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition"
             >
-              ←
+              <IoChevronBack className="text-xl" />
             </button>
             <button
               onClick={nextHero}
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition"
             >
-              →
+              <IoChevronForward className="text-xl" />
             </button>
             
             {/* Dots Indicator */}
@@ -122,8 +126,11 @@ export const HomePage = () => {
 
           {/* Right: Featured Products */}
           <div className="flex-1 space-y-4">
-            {Array.isArray(products) && products.slice(0, 2).map((product) => (
-              <div key={product._id} className="bg-gray-50 rounded-lg p-4 text-center">
+            {featuredProducts.slice(0, 2).map((product, idx) => (
+              <div 
+                key={product._id}
+                className="bg-gray-50 rounded-lg p-4 text-center opacity-70 hover:opacity-100 transition-opacity duration-500"
+              >
                 <p className="text-blue-600 text-sm font-semibold">{product.category?.name || 'FEATURED'}</p>
                 <h3 className="text-xl font-bold mb-1">${product.price}</h3>
                 <p className="text-gray-600 text-sm mb-3">{product.name}</p>
@@ -157,7 +164,7 @@ export const HomePage = () => {
             }}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition"
           >
-            ←
+            <IoChevronBack className="text-xl" />
           </button>
           <button 
             onClick={() => {
@@ -166,7 +173,7 @@ export const HomePage = () => {
             }}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition"
           >
-            →
+            <IoChevronForward className="text-xl" />
           </button>
           <div 
             id="categories-container"
